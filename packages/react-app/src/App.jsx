@@ -509,7 +509,7 @@ function App(props) {
   console.log("ethCostToPurchaseTokens:", ethCostToPurchaseTokens);
 
   const ethValueToSellTokens =
-    tokenSellAmount ? tokenSellAmount : 0 && tokensPerEth && ethers.utils.parseEther("" + tokenSellAmount / parseFloat(tokensPerEth));
+    tokenSellAmount.valid && tokensPerEth && ethers.utils.parseEther("" + tokenSellAmount.value / parseFloat(tokensPerEth));
   console.log("ethValueToSellTokens:", ethValueToSellTokens);
 
   const [tokenSendToAddress, setTokenSendToAddress] = useState();
@@ -638,7 +638,7 @@ function App(props) {
           
             
             
-            {/*Extra UI for buying the tokens back from the user using "approve" and "sellTokens"
+            {/* Extra UI for buying the tokens back from the user using "approve" and "sellTokens" */}
 
             <Divider />
             <div style={{ padding: 8, marginTop: 32, width: 300, margin: "auto" }}>
@@ -691,7 +691,7 @@ function App(props) {
                       loading={buying}
                       onClick={async () => {
                         setBuying(true);
-                        await tx(writeContracts.YourToken.approve(readContracts.Vendor.address, tokenSellAmount && ethers.utils.parseEther(tokenSellAmount)));
+                        await tx(writeContracts.YourToken.approve(readContracts.Vendor.address, tokenSellAmount.valid && ethers.utils.parseEther(tokenSellAmount.value)));;
                         setBuying(false);
                         let resetAmount = tokenSellAmount
                         setTokenSellAmount("");
@@ -715,7 +715,7 @@ function App(props) {
 
               </Card>
             </div>
-            */}
+           
             <div style={{ padding: 8, marginTop: 32 }}>
               <div>Vendor Token Balance:</div>
               <Balance balance={vendorTokenBalance} fontSize={64} />
@@ -744,21 +744,21 @@ function App(props) {
               />
             </div>
 
-            {/*
+            
 
-                🎛 this scaffolding is full of commonly used components
+                {/* 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
+                and give you a form to interact with it locally */}
 
-            <Contract
+            {/* <Contract
               name="YourContract"
               signer={userSigner}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
               contractConfig={contractConfig}
-            />
-            */}
+            /> */}
+           
           </Route>
           <Route path="/contracts">
             <Contract

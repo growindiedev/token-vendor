@@ -6,33 +6,47 @@ import "./YourToken.sol";
 
 contract Vendor is Ownable {
 
-  //event BuyTokens(address buyer, uint256 amountOfETH, uint256 amountOfTokens);
 
   YourToken public yourToken;
   uint256 constant public tokensPerETH = 100;
   event BuyTokens(address buyer, uint amountOfETH, uint amountOfTokens);
+  event SellTokens(address seller, uint256 amountOfETH, uint256 amountOfTokens);
 
   constructor(address tokenAddress) {
     yourToken = YourToken(tokenAddress);
   }
 
-  function buyTokens() payable public {
-    uint256 amountOfETH = msg.value;
-    uint256 amountOfTokens = amountOfETH * tokensPerETH;
+  function buyTokens() external payable {
+    uint256 amountOfTokens = msg.value * tokensPerETH;
     yourToken.transfer(msg.sender, amountOfTokens);
-    emit BuyTokens(msg.sender, amountOfETH, amountOfTokens);
+    emit BuyTokens(msg.sender, msg.value , amountOfTokens);
 
   }
 
-  function withdraw() payable public {
-    address payable owner = payable(owner());
-    require(msg.sender == owner);
-    owner.transfer(address(this).balance);
-    //yourToken.transfer(, yourToken.balanceOf(msg.sender));
-  }
-     // yourToken.transfer(owner(), address(this).balance);
 
-  
+  function withdraw() external onlyOwner {
+    // address payable owner = payable(owner());
+    // require(msg.sender == owner);
+    // owner.transfer(address(this).balance);
+    (bool sent, ) = msg.sender.call{value: address(this).balance}("");
+    require(sent, "withdraw failure");
+
+  }
+
+  function sellTokens(uint theAmount) external  {
+    uint256 allowance = yourToken.allowance(msg.sender, address(this));
+    require(allowance >= theAmount, "You don't have the enough allowance");
+
+    bool tokenSuccess = yourToken.transferFrom(msg.sender, address(this), theAmount); 
+    require(tokenSuccess, "token transfer failed");
+
+    uint256 backEth = theAmount / tokensPerETH;
+    (bool ethSuccess, ) = msg.sender.call{value: backEth}("");
+    require(ethSuccess, "transfer eth back failed");
+    //payable(msg.sender).transfer(theAmount / tokensPerETH);
+    emit SellTokens(msg.sender, backEth, theAmount);
+
+  }
 
 
 
