@@ -7,27 +7,26 @@ import "./YourToken.sol";
 contract Vendor is Ownable {
 
 
-  YourToken public yourToken;
-  uint256 constant public tokensPerETH = 100;
-  event BuyTokens(address buyer, uint amountOfETH, uint amountOfTokens);
-  event SellTokens(address seller, uint256 amountOfETH, uint256 amountOfTokens);
+  YourToken yourToken;
+  
 
   constructor(address tokenAddress) {
     yourToken = YourToken(tokenAddress);
   }
 
-  function buyTokens() external payable {
-    uint256 amountOfTokens = msg.value * tokensPerETH;
-    yourToken.transfer(msg.sender, amountOfTokens);
-    emit BuyTokens(msg.sender, msg.value , amountOfTokens);
+  uint public constant tokensPerEth = 100;
+  event BuyTokens(address buyer, uint256 amountOfEth, uint256 amountOfTokens);
+  event SellTokens(address seller, uint amountOfTokens, uint amountOfEth);
 
+  function buyTokens() external payable {
+    uint amountOfTokens = msg.value * tokensPerEth;
+    (bool sent) = yourToken.transfer(msg.sender, amountOfTokens);
+    require(sent, "Failed to transfer tokens");
+    emit BuyTokens(msg.sender, msg.value , amountOfTokens);
   }
 
 
   function withdraw() external onlyOwner {
-    // address payable owner = payable(owner());
-    // require(msg.sender == owner);
-    // owner.transfer(address(this).balance);
     (bool sent, ) = msg.sender.call{value: address(this).balance}("");
     require(sent, "withdraw failure");
 
@@ -40,20 +39,12 @@ contract Vendor is Ownable {
     bool tokenSuccess = yourToken.transferFrom(msg.sender, address(this), theAmount); 
     require(tokenSuccess, "token transfer failed");
 
-    uint256 backEth = theAmount / tokensPerETH;
+    uint256 backEth = theAmount / tokensPerEth;
     (bool ethSuccess, ) = msg.sender.call{value: backEth}("");
     require(ethSuccess, "transfer eth back failed");
-    //payable(msg.sender).transfer(theAmount / tokensPerETH);
     emit SellTokens(msg.sender, backEth, theAmount);
 
   }
 
-
-
-  // ToDo: create a payable buyTokens() function:
-
-  // ToDo: create a withdraw() function that lets the owner withdraw ETH
-
-  // ToDo: create a sellTokens() function:
 
 }
